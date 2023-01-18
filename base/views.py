@@ -9,4 +9,14 @@ from rest_framework.authentication import TokenAuthentication
 
 # Create your views here.
 
+# class based views
+class UserDetailAPI(APIView):
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (AllowAny,)
+
+    def get(self,request,*args,**kwargs):
+        user = User.objects.get(id=request.user.id)
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
 
