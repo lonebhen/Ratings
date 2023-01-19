@@ -2,4 +2,4 @@
 
 A app to rate the performance of my friends in football 
 
-To be updated
+To be updated regularly 
