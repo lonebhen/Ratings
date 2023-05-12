@@ -1,12 +1,8 @@
 from django.urls import path
-from .views import UserDetailAPI,RegisterUserAPIView
-
-
+from .import views
 
 
 urlpatterns = [
 
-    path('get_details',UserDetailAPI.as_view()),
-    path('register',RegisterUserAPIView.as_view())
-    
+    path('',views.RatingsView.as_view(), name='ratings')
 ]

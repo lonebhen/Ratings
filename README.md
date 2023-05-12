@@ -1,7 +1,8 @@
-# ratings_app(Backend)
+### Ratings App
+
+Rate the football matches performance of my friends <br>
+
+
 <br>
-A app to rate the performance of my friends in football 
-Something like FPL<br>
-You gain points for goals and assists<br>
-5 points for a goal and 2 for assist 
-To be updated regularly 
+
+A <b>goal</b> gives you <b>5 points</b> and an <b>assist</b>gives you <b>3 points</b>
