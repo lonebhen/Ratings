@@ -1,56 +1,38 @@
-from django.shortcuts import render
-from django.contrib.auth import authenticate
-from rest_framework import generics, status
-from rest_framework.response import Response
-from rest_framework.request import Request
-from rest_framework.decorators import APIView
-from .serializers import SignUpSerializer
-from rest_framework.permissions import AllowAny
+from django.core.mail import EmailMultiAlternatives
+from django.dispatch import receiver
+from django.template.loader import render_to_string
+from django.urls import reverse
 
-# Create your views here.
+from django_rest_passwordreset.signals import reset_password_token_created
 
 
+@receiver(reset_password_token_created)
+def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
+    context = {
+        'current_user': reset_password_token.user,
+        'username': reset_password_token.user.username,
+        'email': reset_password_token.user.email,
+        'reset_password_url': "https://fileserver-six.vercel.app/reset-password?token={}".format(reset_password_token.key)
+    }
 
-class SignUpView(generics.GenericAPIView):
-    serializer_class = SignUpSerializer
-    permission_classes = [AllowAny]
+    email_html_message = render_to_string(
+        'account/email/user_reset_password.html', context)
+    email_plaintext_message = render_to_string(
+        'account/email/user_reset_password.txt', context)
 
+    print("Send message")
 
-    def post(self, request:Request):
-        data = request.data
+    msg = EmailMultiAlternatives(
+        # title:
+        "Password Reset for {title}".format(title="File Server App"),
+        # message:
+        email_plaintext_message,
+        # from:
+        "bytebhen@gmail.com",
+        # to:
+        [reset_password_token.user.email]
+    )
+    msg.attach_alternative(email_html_message, "text/html")
+    msg.send()
 
-        serializer = self.serializer_class(data=data)
-
-        if serializer.is_valid():
-            serializer.save()
-
-            context = {
-                "message": "SignUp is Successful",
-                "data": serializer.data
-            }
-
-            return Response(data=context, status=status.HTTP_201_CREATED)
-        
-        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-class LoginView(APIView):
-    permission_classes = [AllowAny,]
-    def post(self, request:Request):
-        username = request.data.get("username")
-        password = request.data.get("password")
-
-
-        user = authenticate(username=username, password=password)
-
-        if user:
-            context = {
-                "message": "User successfully login",
-                "tokens":user.auth_token.key
-            }
-
-            return Response(data=context, status=status.HTTP_200_OK)
-        
-        else:
-            return Response(data={"message":"Login failed"}, status=status.HTTP_401_UNAUTHORIZED)
+    print("Sent")

@@ -7,11 +7,10 @@ from django.contrib.auth.models import AbstractUser
 
 class CustomUserModel(BaseUserManager):
 
-    def create_user(self, username, password, **extra_fields):
-        
+    def create_user(self, email, password, **extra_fields):
 
         user = self.model(
-            username = username,
+            email=email,
             **extra_fields
         )
 
@@ -19,9 +18,8 @@ class CustomUserModel(BaseUserManager):
         user.save()
 
         return user
-    
 
-    def create_superuser(self, username, password, **extra_fields):
+    def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
@@ -29,25 +27,22 @@ class CustomUserModel(BaseUserManager):
         if extra_fields.get("is_staff") is not True:
             raise ValueError("Superuser must have is_staff attribute as True")
         elif extra_fields.get("is_superuser") is not True:
-            raise ValueError("Superuser must have is_superuser attribute as True")
+            raise ValueError(
+                "Superuser must have is_superuser attribute as True")
         elif extra_fields.get("is_active") is not True:
             raise ValueError("Superuser must have is_active attribute as True")
-        
-        return self.create_user(username=username, password=password, **extra_fields)
-    
+
+        return self.create_user(email=email, password=password, **extra_fields)
 
 
 class User(AbstractUser):
     username = models.CharField(max_length=25, unique=True)
-    # email = models.EmailField()
+    email = models.EmailField(max_length=50,  unique=True)
 
-
-    USERNAME_FIELD = "username"
-    # REQUIRED_FIELDS = []
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
 
     objects = CustomUserModel()
 
-
     def __str__(self):
-        return self.username
-        
+        return self.email
