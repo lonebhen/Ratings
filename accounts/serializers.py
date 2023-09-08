@@ -7,4 +7,5 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
             "email_template_name": "account/email/user_reset_password.html"
         }
     
+    # def validate_email(sel)
 
