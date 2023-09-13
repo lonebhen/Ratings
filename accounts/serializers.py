@@ -1,11 +1,13 @@
-from dj_rest_auth.serializers import PasswordResetSerializer
+from rest_framework import serializers
+from .models import PasswordResetToken
 
 
-class CustomPasswordResetSerializer(PasswordResetSerializer):
-    def get_email_options(self):
-        return {
-            "email_template_name": "account/email/user_reset_password.html"
-        }
+class PasswordResetTokenSerializer(serializers.Serializer):
+    password = serializers.CharField(write_only = True)
+    token = serializers.UUIDField(write_only = True)
+
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
     
-    # def validate_email(sel)
-

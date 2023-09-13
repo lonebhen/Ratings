@@ -206,11 +206,6 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 LOGIN_URL = 'http://localhost:8000/'
 
 
-REST_AUTH = {
-    "PASSWORD_RESET_SERIALIZER": "accounts.serializers.CustomPasswordResetSerializer"
-}
-
-
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")

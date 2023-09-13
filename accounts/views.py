@@ -1,38 +1,101 @@
-from django.core.mail import EmailMultiAlternatives
-from django.dispatch import receiver
+from .serializers import PasswordResetRequestSerializer
+from .models import PasswordResetToken
+from rest_framework.views import APIView
+from rest_framework import status
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.request import Request
+from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from django.urls import reverse
+from django.utils import timezone
+import uuid
+import os
 
-from django_rest_passwordreset.signals import reset_password_token_created
+User = get_user_model()
 
 
-@receiver(reset_password_token_created)
-def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
-    context = {
-        'current_user': reset_password_token.user,
-        'username': reset_password_token.user.username,
-        'email': reset_password_token.user.email,
-        'reset_password_url': "https://fileserver-six.vercel.app/reset-password?token={}".format(reset_password_token.key)
-    }
+class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
 
-    email_html_message = render_to_string(
-        'account/email/user_reset_password.html', context)
-    email_plaintext_message = render_to_string(
-        'account/email/user_reset_password.txt', context)
+    def post(self, request: Request):
+        data = request.data
 
-    print("Send message")
+        serializer = PasswordResetRequestSerializer(data=data)
 
-    msg = EmailMultiAlternatives(
-        # title:
-        "Password Reset for {title}".format(title="File Server App"),
-        # message:
-        email_plaintext_message,
-        # from:
-        "bytebhen@gmail.com",
-        # to:
-        [reset_password_token.user.email]
-    )
-    msg.attach_alternative(email_html_message, "text/html")
-    msg.send()
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
 
-    print("Sent")
+            try:
+                user = User.objects.get(email=email)
+
+            except User.DoesNotExist:
+                response = {
+                    "message": "User with this email does not exist"
+                }
+                return Response(data=response, status=status.HTTP_404_NOT_FOUND)
+
+            token = str(uuid.uuid4())
+            reset_token = PasswordResetToken(user=user, token=token)
+            reset_token.save()
+
+            reset_link = f'https://localhost:4200/password/reset/{token}'
+
+            context = {
+                'user': user,
+                'reset_link': reset_link,
+            }
+
+            email_body = render_to_string(
+                'account/email/user_reset_password.html', context)
+
+            send_mail(
+                'Password Reset Link',
+                email_body,
+                os.getenv('EMAIL_HOST_USER'),
+                [email],
+                fail_silently=False,
+                html_message=email_body, )
+
+            response = {
+                "message": "Email reset link sent"
+            }
+
+            return Response(data=response, status=status.HTTP_200_OK)
+
+        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordResetView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request: Request):
+        data = request.data
+
+        serializer = PasswordResetRequestSerializer(data=data)
+
+        if serializer.is_valid():
+            token = serializer.validated_data['token']
+            password = serializer.validated_data['password']
+
+            try:
+                reset_token = PasswordResetToken.objects.get(
+                    token=token, expires_at__gt=timezone.now())
+                user = reset_token.user
+                user.set_password(password)
+
+                user.save()
+                reset_token.delete()
+
+                response = {
+                    "message": "Password Reset Successfull"
+                }
+
+                return Response(data=response, status=status.HTTP_200_OK)
+
+            except PasswordResetToken.DoesNotExist:
+                response = {
+                    "message": "Invalid or expired token"
+                }
+
+                return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
