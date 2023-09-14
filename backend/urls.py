@@ -6,8 +6,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('accounts.urls')),
     path('rate/', include('base.urls')),
-    path('api/password_reset/',
-         include('django_rest_passwordreset.urls', namespace='password_reset')),
+    path('dj-rest-auth/', include('dj_rest_auth.urls'))
 
 
 ]

@@ -116,7 +116,8 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication"
     ),
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated"
+        "rest_framework.permissions.IsAuthenticated",
+        "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
     ]
 }
 
@@ -193,6 +194,11 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+REST_AUTH = {
+    'USE_JWT': True,
+    'JWT_AUTH_HTTPONLY': True
+}
 
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
