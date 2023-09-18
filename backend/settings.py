@@ -57,7 +57,6 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'django_rest_passwordreset',
-    # 'password_reset',
     'corsheaders',
     'debug_toolbar',
 
