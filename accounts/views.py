@@ -39,7 +39,7 @@ class PasswordResetRequestView(APIView):
             reset_token = PasswordResetToken(user=user, token=token)
             reset_token.save()
 
-            reset_link = f'https://localhost:4200/password/reset/{token}'
+            reset_link = f'http://localhost:4200/password/reset?token={token}'
 
             context = {
                 'user': user,
@@ -93,9 +93,10 @@ class PasswordResetView(APIView):
 
                 return Response(data=response, status=status.HTTP_200_OK)
 
-            except PasswordResetToken.DoesNotExist:
+            except Exception as e:
+                error_message = str(e)
                 response = {
-                    "message": "Invalid or expired token"
+                    "message": f"An error occurred: {error_message}"
                 }
-
-                return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data=response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
