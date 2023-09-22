@@ -118,4 +118,3 @@ class AdminLogin(APIView):
                 return Response({'message': 'User is not an admin'}, status=status.HTTP_403_FORBIDDEN)
         else:
             return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-af
