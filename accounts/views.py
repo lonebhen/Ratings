@@ -5,12 +5,13 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.request import Request
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils import timezone
 import uuid
 import os
+from rest_framework.authtoken.models import Token
 
 User = get_user_model()
 
@@ -100,3 +101,21 @@ class PasswordResetView(APIView):
                 }
             return Response(data=response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminLogin(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        user = authenticate(request, email=email, password=password)
+
+        if user is not None:
+            if user.is_active and user.is_staff:
+                token, created = Token.objects.get_or_create(user=user)
+                return Response({'token': token.key, 'message': 'Admin logged in successfully'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'User is not an admin'}, status=status.HTTP_403_FORBIDDEN)
+        else:
+            return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+af
