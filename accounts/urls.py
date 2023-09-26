@@ -2,7 +2,7 @@ from django.urls import path, re_path
 from dj_rest_auth.registration.views import RegisterView
 from dj_rest_auth.views import LoginView
 from allauth.account.views import confirm_email, email_verification_sent
-from .views import PasswordResetRequestView, PasswordResetView
+from .views import PasswordResetRequestView, PasswordResetView, AdminLogin
 
 
 urlpatterns = [
@@ -16,7 +16,8 @@ urlpatterns = [
 
     path("password/reset/request/", PasswordResetRequestView.as_view(),
          name="password_reset_request"),
-    path("password/reset/", PasswordResetView.as_view(), name='password_reset')
+    path("password/reset/", PasswordResetView.as_view(), name='password_reset'),
+    path("admin/login/", AdminLogin.as_view(), name='admin-login')
 
 
 

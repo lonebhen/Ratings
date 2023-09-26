@@ -14,4 +14,4 @@ class RatingSerializer(serializers.ModelSerializer):
     # user = UserSerializer()
     class Meta:
         model = Ratings
-        fields = ['username','goals','assists','matches_played']
+        fields = ['id','username','goals','assists','matches_played']
