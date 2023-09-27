@@ -19,10 +19,3 @@ class RatingAdmin(admin.ModelAdmin):
 
 admin.site.register(Ratings, RatingAdmin)
 
-
-# @admin.register(Ratings)
-# class RatePlayers(admin.ModelAdmin):
-#     list_display = ['user','goals','assists']
-
-
-    
